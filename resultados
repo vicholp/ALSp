@@ -1,0 +1,4 @@
+instancia 8 : 
+    - MAX_ITERATIONS 1000 
+    - MAX_TABU_SIZE 0.50
+    sale del espacio invalido

@@ -21,11 +21,11 @@ public:
     {
         n_planes = instance->getNPlanes();
         this->instance = instance;
-        p = (float **)malloc(n_planes * sizeof(float *));
+        p = new float *[n_planes];
 
         for (int i = 0; i < n_planes; i++)
         {
-            p[i] = (float *)malloc(3 * sizeof(float));
+            p[i] = new float[3];
 
             for (int j = 0; j < 3; j++)
             {
@@ -39,23 +39,24 @@ public:
     {
         for (int i = 0; i < n_planes; i++)
         {
-            // free(p[i]);
+            delete[] p[i];
         }
 
-        // free(p);
+        delete[] p;
     }
 
     void setDiffFromTarget(int plane, float penalization)
     {
         float dif = penalization - p[plane][0];
-        p[plane][0] += penalization;
+        p[plane][0] += dif;
+
         total += dif;
     }
 
     void setOutOfLimit(int plane, float penalization)
     {
         float dif = penalization - p[plane][1];
-        p[plane][1] += penalization;
+        p[plane][1] += dif;
 
         total += dif;
 
@@ -65,7 +66,7 @@ public:
     void setNoSeparation(int plane, float penalization)
     {
         float dif = penalization - p[plane][2];
-        p[plane][2] += penalization;
+        p[plane][2] += dif;
 
         total += dif;
 

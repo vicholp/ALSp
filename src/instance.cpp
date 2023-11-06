@@ -25,26 +25,26 @@ public:
     {
         this->n_planes = n_planes;
 
-        this->E = (int *)malloc(n_planes * sizeof(int));
+        this->E = new int[n_planes];
         memcpy(this->E, E, n_planes * sizeof(int));
 
-        this->T = (int *)malloc(n_planes * sizeof(int));
+        this->T = new int[n_planes];
         memcpy(this->T, T, n_planes * sizeof(int));
 
-        this->L = (int *)malloc(n_planes * sizeof(int));
+        this->L = new int[n_planes];
         memcpy(this->L, L, n_planes * sizeof(int));
 
-        this->h = (double *)malloc(n_planes * sizeof(double));
+        this->h = new double[n_planes];
         memcpy(this->h, h, n_planes * sizeof(double));
 
-        this->g = (double *)malloc(n_planes * sizeof(double));
+        this->g = new double[n_planes];
         memcpy(this->g, g, n_planes * sizeof(double));
 
-        this->S = (int **)malloc(n_planes * sizeof(int *));
+        this->S = new int *[n_planes];
 
         for (int i = 0; i < n_planes; i++)
         {
-            this->S[i] = (int *)malloc(n_planes * sizeof(int));
+            this->S[i] = new int[n_planes];
             memcpy(this->S[i], S[i], n_planes * sizeof(int));
         }
 
@@ -59,18 +59,18 @@ public:
 
     ~Instance()
     {
-        // free(E);
-        // free(T);
-        // free(L);
-        // free(h);
-        // free(g);
+        delete[] E;
+        delete[] T;
+        delete[] L;
+        delete[] h;
+        delete[] g;
 
         for (int i = 0; i < n_planes; i++)
         {
-            // free(S[i]);
+            delete[] S[i];
         }
 
-        // free(S);
+        delete[] S;
     }
 
     int getE(int i)

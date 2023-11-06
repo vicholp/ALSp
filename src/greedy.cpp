@@ -20,18 +20,18 @@ public:
     {
         this->instance = instance;
 
-        landed_planes = (bool *)malloc(instance->getNPlanes() * sizeof(bool));
+        landed_planes = new bool[instance->getNPlanes()];
 
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
             landed_planes[i] = false;
         }
 
-        X = (int **)malloc(instance->getNPlanes() * sizeof(int *));
+        X = new int *[instance->getNPlanes()];
 
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
-            X[i] = (int *)malloc(2 * sizeof(int));
+            X[i] = new int[2];
 
             X[i][0] = -1;
             X[i][1] = 0;
@@ -40,13 +40,13 @@ public:
 
     ~Greedy()
     {
-        // free(landed_planes);
+        delete[] landed_planes;
 
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
-            // free(X[i]);
+            delete[] X[i];
         }
-        // free(X);
+        delete[] X;
     }
 
     Solution *compute(bool debug = false)
@@ -56,9 +56,7 @@ public:
             step(debug);
         }
 
-        Solution *solution = (Solution *)malloc(sizeof(Solution));
-        *solution = Solution(instance, X, landed_planes);
-        return solution;
+        return new Solution(instance, X, landed_planes);
     }
 
 private:

@@ -22,84 +22,78 @@ public:
     {
         n_planes = instance->getNPlanes();
 
-        this->instance = (Instance *)malloc(sizeof(Instance));
-        memcpy(this->instance, instance, sizeof(Instance));
+        this->instance = instance;
 
-        this->landed_planes = (bool *)malloc(n_planes * sizeof(bool));
+        this->landed_planes = new bool[n_planes];
 
         for (int i = 0; i < n_planes; i++)
         {
             this->landed_planes[i] = false;
         }
 
-        this->X = (int **)malloc(n_planes * sizeof(int *));
+        this->X = new int *[n_planes];
 
         for (int i = 0; i < n_planes; i++)
         {
-            this->X[i] = (int *)malloc(2 * sizeof(int));
+            this->X[i] = new int[2];
 
             this->X[i][0] = -1;
             this->X[i][1] = 0;
         }
 
-        this->penalization = (Penalization *)malloc(sizeof(Penalization));
-        *penalization = Penalization(instance);
+        this->penalization = new Penalization(instance);
     }
 
     Solution(Instance *instance, int **X, bool *landed_planes)
     {
-        this->instance = (Instance *)malloc(sizeof(Instance));
-        memcpy(this->instance, instance, sizeof(Instance));
+        this->instance = instance;
 
         n_planes = instance->getNPlanes();
 
-        this->landed_planes = (bool *)malloc(n_planes * sizeof(bool));
+        this->landed_planes = new bool[n_planes];
         memcpy(this->landed_planes, landed_planes, n_planes * sizeof(bool));
 
-        this->X = (int **)malloc(n_planes * sizeof(int *));
+        this->X = new int *[n_planes];
         for (int i = 0; i < n_planes; i++)
         {
-            this->X[i] = (int *)malloc(2 * sizeof(int));
+            this->X[i] = new int[2];
             memcpy(this->X[i], X[i], 2 * sizeof(int));
         }
 
-        this->penalization = (Penalization *)malloc(sizeof(Penalization));
-        *penalization = Penalization(instance);
+        this->penalization = new Penalization(instance);
     }
 
     Solution(Solution *solution)
     {
-        this->instance = (Instance *)malloc(sizeof(Instance));
-        memcpy(this->instance, solution->getInstance(), sizeof(Instance));
+        this->instance = solution->instance;
 
         n_planes = instance->getNPlanes();
 
-        this->landed_planes = (bool *)malloc(n_planes * sizeof(bool));
+        this->landed_planes = new bool[n_planes];
         memcpy(this->landed_planes, solution->getLandedPlanes(), n_planes * sizeof(bool));
 
-        this->X = (int **)malloc(n_planes * sizeof(int *));
+        this->X = new int *[n_planes];
         for (int i = 0; i < n_planes; i++)
         {
-            this->X[i] = (int *)malloc(2 * sizeof(int));
+            this->X[i] = new int[2];
             memcpy(this->X[i], solution->getX()[i], 2 * sizeof(int));
         }
 
-        this->penalization = (Penalization *)malloc(sizeof(Penalization));
-        *penalization = Penalization(instance);
+        this->penalization = new Penalization(instance);
     }
 
     ~Solution()
     {
-        // free(this->landed_planes);
+        delete[] landed_planes;
 
         for (int i = 0; i < n_planes; i++)
         {
-            // free(this->X[i]);
+            delete[] X[i];
         }
-        // free(this->X);
 
-        // penalization->~Penalization();
-        // free(this->penalization);
+        delete[] X;
+
+        delete penalization;
     }
 
     Instance *getInstance()

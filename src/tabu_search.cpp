@@ -13,25 +13,22 @@ private:
     Instance *instance;
     Solution *initial_solution;
     Solution *solution;
+    Solution *best;
     int tabu_length = 0;
     int *tabu;
 
 public:
     TabuSearch(Instance *instance, Solution *initial_solution, int tabu_length = 10)
     {
-        this->instance = (Instance *)malloc(sizeof(Instance));
-        memcpy(this->instance, instance, sizeof(Instance));
+        this->instance = instance;
 
-        // this->initial_solution = new Solution(initial_solution);
-        this->initial_solution = (Solution *)malloc(sizeof(Solution));
-        *this->initial_solution = Solution(initial_solution);
+        this->initial_solution = new Solution(initial_solution);
 
-        this->solution = (Solution *)malloc(sizeof(Solution));
-        *this->solution = Solution(initial_solution);
+        this->solution = new Solution(initial_solution);
 
         this->tabu_length = tabu_length;
 
-        tabu = (int *)malloc(tabu_length * sizeof(int));
+        tabu = new int[tabu_length];
 
         for (int i = 0; i < tabu_length; i++)
         {
@@ -41,14 +38,18 @@ public:
 
     ~TabuSearch()
     {
-        // solution->~Solution();
-        // free(solution);
+        delete solution;
 
-        // free(tabu);
+        delete initial_solution;
+
+        delete[] tabu;
     }
 
     bool isInTabu(int n)
     {
+        if (n < 0 || n >= tabu_length)
+            return false;
+
         for (int i = 0; i < tabu_length; i++)
         {
             if (tabu[i] == n)
@@ -60,6 +61,9 @@ public:
 
     void appendToTabu(int n)
     {
+        if (n < 0 || n >= tabu_length)
+            return;
+
         if (isInTabu(n))
             return;
 
@@ -86,16 +90,18 @@ public:
         printf("c:\t%0.f\n", solution->getEvaluation());
     }
 
-    Solution *compute(int steps = 10, bool debug = true)
+    Solution *compute(int steps = 10, bool progress = true, bool debug = false)
     {
-        Solution *best = (Solution *)malloc(sizeof(solution));
-        *best = Solution(initial_solution);
+        best = new Solution(initial_solution);
 
-        printf("i\tc\tbest\tvalid\n");
-        printf("0\t%.0f\t%.0f\t%d\n",
-               initial_solution->getEvaluation(),
-               initial_solution->getEvaluation(),
-               initial_solution->isValid());
+        if (progress)
+        {
+            printf("i\tc\tbest\tvalid\n");
+            printf("0\t%.0f\t%.0f\t%d\n",
+                   initial_solution->getEvaluation(),
+                   initial_solution->getEvaluation(),
+                   initial_solution->isValid());
+        }
 
         for (int i = 0; i < steps; i++)
         {
@@ -103,23 +109,30 @@ public:
 
             appendToTabu(v);
 
-            initial_solution = solution;
+            delete initial_solution;
+            initial_solution = new Solution(solution);
 
-            printf("%d\t%.0f\t%.0f\t%d",
-                   i,
-                   solution->getEvaluation(),
-                   best->getEvaluation(),
-                   solution->isValid());
+            if (progress)
+            {
+                printf("%d\t%.0f\t%.0f\t%d",
+                       i + 1,
+                       solution->getEvaluation(),
+                       best->getEvaluation(),
+                       solution->isValid());
+            }
 
             if (solution->getEvaluation() < best->getEvaluation())
             {
-                *best = *solution;
-                printf("\tBEST");
+                delete best;
+
+                best = new Solution(solution);
+
+                if (progress)
+                    printf("\tBEST");
             }
 
-            printf("\n");
-
-            // solution->printXTable();
+            if (progress)
+                printf("\n");
         }
 
         return best;
@@ -127,31 +140,33 @@ public:
 
     int step(bool debug = true)
     {
+        int n_planes = instance->getNPlanes();
+
         int min_c = INT_MAX;
         int min_mov = -1;
         int min_dir = -1;
-        int **min_X = (int **)malloc(instance->getNPlanes() * sizeof(int *));
+        int **min_X = new int *[n_planes];
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
-            min_X[i] = (int *)malloc(2 * sizeof(int));
+            min_X[i] = new int[2];
         }
 
         int ext_min_c = INT_MAX;
         int ext_min_mov = -1;
         int ext_min_dir = -1;
-        int **ext_min_X = (int **)malloc(instance->getNPlanes() * sizeof(int *));
+        int **ext_min_X = new int *[n_planes];
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
-            ext_min_X[i] = (int *)malloc(2 * sizeof(int));
+            ext_min_X[i] = new int[2];
         }
 
-        int **X = (int **)malloc(instance->getNPlanes() * sizeof(int *));
+        int **X = new int *[n_planes];
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
-            X[i] = (int *)malloc(2 * sizeof(int));
+            X[i] = new int[2];
         }
 
-        Solution *temp_solution = (Solution *)malloc(sizeof(Solution));
+        Solution *temp_solution;
 
         if (debug)
             printf("plane\torig\tfinal\tc\n");
@@ -198,7 +213,7 @@ public:
             if (debug)
                 printf("\t%d\t", X[i][1]);
 
-            *temp_solution = Solution(instance, X, initial_solution->getLandedPlanes());
+            temp_solution = new Solution(instance, X, initial_solution->getLandedPlanes());
 
             int c = temp_solution->evaluation();
 
@@ -213,6 +228,8 @@ public:
                     memcpy(min_X[j], X[j], 2 * sizeof(int));
                 }
             }
+
+            delete temp_solution;
 
             if (debug)
                 printf("%d\n", c);
@@ -248,7 +265,7 @@ public:
             if (debug)
                 printf("\t%d\t", X[i][1]);
 
-            *temp_solution = Solution(instance, X, initial_solution->getLandedPlanes());
+            temp_solution = new Solution(instance, X, initial_solution->getLandedPlanes());
 
             c = temp_solution->evaluation();
 
@@ -266,26 +283,26 @@ public:
 
             if (debug)
                 printf("%d\n", c);
+
+            delete temp_solution;
         }
 
-        *solution = Solution(instance, min_X, initial_solution->getLandedPlanes());
+        delete solution;
+        solution = new Solution(instance, min_X, initial_solution->getLandedPlanes());
 
         if (debug)
             printf("MIN\t\t\t%d\n\n", min_c);
 
         for (int i = 0; i < instance->getNPlanes(); i++)
         {
-            // free(min_X[i]);
-            // free(ext_min_X[i]);
-            // free(X[i]);
+            delete[] min_X[i];
+            delete[] ext_min_X[i];
+            delete[] X[i];
         }
 
-        // free(X);
-        // free(min_X);
-        // free(ext_min_X);
-
-        // temp_solution->~Solution();
-        // free(temp_solution);
+        delete[] X;
+        delete[] min_X;
+        delete[] ext_min_X;
 
         return min_mov;
     }
